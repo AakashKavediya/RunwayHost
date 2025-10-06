@@ -533,15 +533,22 @@ last_comparison_df = None
         
 @api_bp.route("/accuracy_chart", methods=["GET"])
 def accuracy_chart():
-    global last_comparison_df,start_dt,end_dt
-    metric = request.args.get("metric", "Overall")
-
-    format_date = lambda x: datetime.strptime(x, "%Y%m%d%H%M").strftime("%d/%m/%Y %H:%M UTC") if x else ""
-    start_dt = format_date(start_dt)
-    end_dt = format_date(end_dt)
-
+    global last_comparison_df
+    # Ensure data exists before proceeding
     if last_comparison_df is None:
         return jsonify({"error": "No comparison data available. Run /process_metar first."}), 400
+
+    metric = request.args.get("metric", "Overall")
+
+    # Safely read optional globals set by /process_metar
+    def format_date_safe(value):
+        try:
+            return datetime.strptime(value, "%Y%m%d%H%M").strftime("%d/%m/%Y %H:%M UTC") if value else ""
+        except Exception:
+            return ""
+
+    start_dt_str = format_date_safe(globals().get("start_dt"))
+    end_dt_str = format_date_safe(globals().get("end_dt"))
 
     # Prepare DataFrame for chart
     df = last_comparison_df.copy()
@@ -567,7 +574,7 @@ def accuracy_chart():
     )
     fig.update_layout(
         title={
-            'text': f"Daily {metric} Accuracy from {start_dt} to {end_dt}",
+            'text': f"Daily {metric} Accuracy from {start_dt_str} to {end_dt_str}",
             'x': 0.5,  # Center the title
             'xanchor': 'center',
             'font': {'size': 18, 'color': 'black'}
