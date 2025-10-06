@@ -37,7 +37,10 @@ def fetch_upper_air_data(datetime_str: str, station_id: str, src: str = 'UNKNOWN
             raise Exception("HTML page received: likely no data available for this datetime/station.")
         # Save to file
         download_dir = os.path.join(UPPER_AIR_DATA_DIR, 'downloads')
-        os.makedirs(download_dir, exist_ok=True)
+        try:
+            os.makedirs(download_dir, exist_ok=True)
+        except (OSError, PermissionError) as e:
+            print(f"Warning: Could not create directory {download_dir}: {e}")
         dt = datetime_str.replace(":", "").replace("-", "").replace(" ", "_")
         filename = secure_filename(f"upper_air_{station_id}_{dt}.csv")
         file_path = os.path.join(download_dir, filename)
