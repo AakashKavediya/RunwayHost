@@ -6,7 +6,8 @@ def create_app():
     from .routes.api import api_bp
     from .routes.web import web
 
-    app.register_blueprint(api_bp, url_prefix='/api')
+    # `api_bp` already declares url_prefix='/api' internally
+    app.register_blueprint(api_bp)
     app.register_blueprint(web)
 
     return app
