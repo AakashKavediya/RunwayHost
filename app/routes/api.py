@@ -34,10 +34,14 @@ METAR_DOWNLOADS_DIR = os.path.join(METAR_DATA_DIR, 'downloads')
 UPPER_AIR_UPLOADS_DIR = os.path.join(UPPER_AIR_DATA_DIR, 'uploads')
 UPPER_AIR_DOWNLOADS_DIR = os.path.join(UPPER_AIR_DATA_DIR, 'downloads')
 
-os.makedirs(METAR_UPLOADS_DIR, exist_ok=True)
-os.makedirs(METAR_DOWNLOADS_DIR, exist_ok=True)
-os.makedirs(UPPER_AIR_UPLOADS_DIR, exist_ok=True)
-os.makedirs(UPPER_AIR_DOWNLOADS_DIR, exist_ok=True)
+# Create directories with error handling for serverless environments
+try:
+    os.makedirs(METAR_UPLOADS_DIR, exist_ok=True)
+    os.makedirs(METAR_DOWNLOADS_DIR, exist_ok=True)
+    os.makedirs(UPPER_AIR_UPLOADS_DIR, exist_ok=True)
+    os.makedirs(UPPER_AIR_DOWNLOADS_DIR, exist_ok=True)
+except (OSError, PermissionError) as e:
+    print(f"Warning: Could not create subdirectories on startup: {e}")
 
 def encode_file_path(file_path):
     """Encode a file path to a secure token"""
@@ -947,8 +951,13 @@ def upload_ad_warning():
         return jsonify({'error': 'Only .txt files are allowed'}), 400
     
     # Create a directory for AD warning files if it doesn't exist
-    ad_warn_dir = os.path.join(os.getcwd(), 'ad_warn_data')
-    os.makedirs(ad_warn_dir, exist_ok=True)
+    # Use /tmp for serverless environments
+    is_serverless = os.environ.get('VERCEL') or os.environ.get('AWS_LAMBDA_FUNCTION_NAME')
+    ad_warn_dir = '/tmp/ad_warn_data' if is_serverless else os.path.join(os.getcwd(), 'ad_warn_data')
+    try:
+        os.makedirs(ad_warn_dir, exist_ok=True)
+    except (OSError, PermissionError) as e:
+        print(f"Warning: Could not create directory {ad_warn_dir}: {e}")
     
     # Save the warning file
     warning_file = os.path.join(ad_warn_dir, 'AD_warning.txt')
@@ -991,8 +1000,13 @@ def upload_ad_warning():
 def adwrn_verify():
     try:
         # Define base directory and ensure it exists
-        ad_warn_dir = os.path.join(os.getcwd(), 'ad_warn_data')
-        os.makedirs(ad_warn_dir, exist_ok=True)
+        # Use /tmp for serverless environments
+        is_serverless = os.environ.get('VERCEL') or os.environ.get('AWS_LAMBDA_FUNCTION_NAME')
+        ad_warn_dir = '/tmp/ad_warn_data' if is_serverless else os.path.join(os.getcwd(), 'ad_warn_data')
+        try:
+            os.makedirs(ad_warn_dir, exist_ok=True)
+        except (OSError, PermissionError) as e:
+            print(f"Warning: Could not create directory {ad_warn_dir}: {e}")
         
         # Define input and output paths
         warning_file = os.path.join(ad_warn_dir, 'AD_warning.txt')

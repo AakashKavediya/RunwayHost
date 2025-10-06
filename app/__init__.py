@@ -10,3 +10,6 @@ def create_app():
     app.register_blueprint(web)
 
     return app
+
+# Create the app instance for Vercel
+app = create_app()

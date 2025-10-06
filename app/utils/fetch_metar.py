@@ -6,8 +6,14 @@ import os
 
 def fetch_all_metar(icao, start_dt, end_dt, output_file="metar.txt"):
     # Ensure output file is saved in ad_warn_data directory
-    ad_warn_dir = os.path.join(os.getcwd(), 'ad_warn_data')
-    os.makedirs(ad_warn_dir, exist_ok=True)
+    # Use /tmp for serverless environments
+    is_serverless = os.environ.get('VERCEL') or os.environ.get('AWS_LAMBDA_FUNCTION_NAME')
+    ad_warn_dir = '/tmp/ad_warn_data' if is_serverless else os.path.join(os.getcwd(), 'ad_warn_data')
+    
+    try:
+        os.makedirs(ad_warn_dir, exist_ok=True)
+    except (OSError, PermissionError) as e:
+        print(f"Warning: Could not create directory {ad_warn_dir}: {e}")
     
     # If output_file doesn't have a path, save it in ad_warn_data directory
     if not os.path.dirname(output_file):
