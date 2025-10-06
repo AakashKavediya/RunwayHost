@@ -1,7 +1,8 @@
-from app import app  # assuming your __init__.py creates Flask app
+# run.py
+from app import app  # Import the Flask app instance from app/__init__.py
 
-# Expose app for Vercel
-app = app
+# Vercel looks for "app" here
+app = app  
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
