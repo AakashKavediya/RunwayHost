@@ -30,7 +30,8 @@ def home():
                 # Read the generated file to show preview
                 try:
                     # The file should now be in ad_warn_data directory
-                    ad_warn_dir = os.path.join(os.getcwd(), 'ad_warn_data')
+                    is_serverless = os.environ.get('VERCEL') or os.environ.get('AWS_LAMBDA_FUNCTION_NAME')
+                    ad_warn_dir = '/tmp/ad_warn_data' if is_serverless else os.path.join(os.getcwd(), 'ad_warn_data')
                     file_path = os.path.join(ad_warn_dir, output_file)
                     with open(file_path, 'r', encoding='utf-8') as f:
                         file_content = f.read()
@@ -103,7 +104,8 @@ def bar_chart():
         
         if result.returncode == 0:
             # Check if the combined chart file was generated
-            chart_file = os.path.join(os.getcwd(), 'combined_accuracy_chart.html')
+            is_serverless = os.environ.get('VERCEL') or os.environ.get('AWS_LAMBDA_FUNCTION_NAME')
+            chart_file = os.path.join('/tmp', 'combined_accuracy_chart.html') if is_serverless else os.path.join(os.getcwd(), 'combined_accuracy_chart.html')
             if os.path.exists(chart_file):
                 return send_file(chart_file, mimetype='text/html')
             else:

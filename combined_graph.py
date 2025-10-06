@@ -1,10 +1,13 @@
+import os
 import pandas as pd
 import plotly.graph_objects as go
 
 # 1. Load and process the data from the CSV file, skipping the title row
 try:
     # First, read the first line to extract month information
-    with open('./ad_warn_data/final_warning_report.csv', 'r') as f:
+    is_serverless = os.environ.get('VERCEL') or os.environ.get('AWS_LAMBDA_FUNCTION_NAME')
+    base_dir = '/tmp/ad_warn_data' if is_serverless else './ad_warn_data'
+    with open(f"{base_dir}/final_warning_report.csv", 'r') as f:
         first_line = f.readline().strip()
     
     # Extract month from the first line (e.g., "Aerodrome warning for station VABB for July 2025")
@@ -13,7 +16,7 @@ try:
     month_name = month_match.group(1) if month_match else "Unknown Month"
     
     # Now read the CSV data skipping the title row
-    df = pd.read_csv('./ad_warn_data/final_warning_report.csv', skiprows=1)
+    df = pd.read_csv(f"{base_dir}/final_warning_report.csv", skiprows=1)
 except FileNotFoundError:
     print("Error: 'final_warning_report.csv' not found. Please ensure the file is in the correct directory.")
     exit()
@@ -113,7 +116,8 @@ fig.update_layout(
 )
 
 # 6. Save the chart to a single HTML file
-fig.write_html("combined_accuracy_chart.html")
+output_html = "/tmp/combined_accuracy_chart.html" if is_serverless else "combined_accuracy_chart.html"
+fig.write_html(output_html)
 
-print("Successfully generated the HTML file: combined_accuracy_chart.html")
+print(f"Successfully generated the HTML file: {output_html}")
 
