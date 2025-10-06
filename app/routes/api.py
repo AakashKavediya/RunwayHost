@@ -25,7 +25,7 @@ import base64, io
 from PIL import Image
  
 
-api_bp = Blueprint('api', __name__, url_prefix='https://metargui-production.up.railway.app/')
+api_bp = Blueprint('api', __name__, url_prefix='/api')
 
 # Create uploads and downloads subdirectories in METAR_DATA_DIR
 METAR_UPLOADS_DIR = os.path.join(METAR_DATA_DIR, 'uploads')

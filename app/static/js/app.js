@@ -294,7 +294,7 @@ document.addEventListener('DOMContentLoaded', function () {
             previewContent.textContent = '';
 
             // Make API request
-            fetch(`https://metargui-production.up.railway.app//get_metar?start_date=${startDateTime}&end_date=${endDateTime}&icao=${stationCode}`)
+            fetch(`/api/get_metar?start_date=${startDateTime}&end_date=${endDateTime}&icao=${stationCode}`)
                 .then(response => {
                     if (!response.ok) {
                         return response.json().then(err => {
@@ -600,7 +600,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Make API request to process METAR data
             showLoadingSection(); // Show loading before fetch
-            fetch('https://metargui-production.up.railway.app//process_metar', {
+            fetch('/api/process_metar', {
                 method: 'POST',
                 body: formData
             })
@@ -620,59 +620,16 @@ document.addEventListener('DOMContentLoaded', function () {
                     // Get the encoded paths for the CSV files
                     const comparisonEncodedPath = data.file_paths.comparison_csv;
                     const detailedComparisonEncodedPath = data.file_paths.merged_csv;
-                    const downloadUrl = `https://metargui-production.up.railway.app//download/comparison_csv?file_path=${comparisonEncodedPath}`;
-                    const detailedDownloadUrl = `https://metargui-production.up.railway.app//download/merged_csv?file_path=${detailedComparisonEncodedPath}`;
+                    const downloadUrl = `/api/download/comparison_csv?file_path=${comparisonEncodedPath}`;
+                    const detailedDownloadUrl = `/api/download/merged_csv?file_path=${detailedComparisonEncodedPath}`;
 
                     const metadata = data.metadata;
                     const metarReportTitle = document.getElementById('metarReportTitle');
 
                     document.getElementById("downloadCsvBtn").href = 
-    `https://metargui-production.up.railway.app//download/comparison_csv?file_path=${data.file_paths.comparison_csv}`;
+    `/api/download/comparison_csv?file_path=${data.file_paths.comparison_csv}`;
 
- document.getElementById('upperAirForecastFileInput').addEventListener('change', async function (e) {
-        const file = e.target.files[0];
-        if (!file) return;
 
-        const reader = new FileReader();
-        reader.onload = async function () {
-          const typedarray = new Uint8Array(this.result);
-
-          const pdf = await pdfjsLib.getDocument({ data: typedarray }).promise;
-          let fullText = '';
-
-          for (let i = 1; i <= pdf.numPages; i++) {
-            const page = await pdf.getPage(i);
-            const textContent = await page.getTextContent();
-            const pageText = textContent.items.map(item => item.str).join(' ');
-            fullText += pageText + '\n';
-          }
-
-          // Extract "UPPER WINDS" block
-          const upperWindsBlock = fullText.match(/UPPER WINDS([\s\S]+?)WEATHER/i);
-          if (!upperWindsBlock) return alert("No 'Upper Winds' data found.");
-
-          const cleanedText = upperWindsBlock[1].replace(/[\=]/g, '').trim();
-          const dataArray = cleanedText.split(/\s+/);
-
-          // Convert into rows of 3 (Altitude, Dir/Speed, Temp)
-          const table = document.getElementById("windTable");
-          const tbody = table.querySelector("tbody");
-          tbody.innerHTML = "";
-          for (let i = 0; i < dataArray.length; i += 6) {
-            const row = document.createElement("tr");
-            for (let j = 0; j < 6; j++) {
-              const cell = document.createElement("td");
-              cell.textContent = dataArray[i + j] || "";
-              row.appendChild(cell);
-            }
-            tbody.appendChild(row);
-          }
-
-          table.style.display = "table";
-        };
-
-        reader.readAsArrayBuffer(file);
-      });
 
                     let update_string = `VERIFICATION RESULT OF TAKE-OFF FORECAST <br> ${metadata.icao}`
                     if (metadata.start_time && metadata.end_time) {
@@ -744,7 +701,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
     document.getElementById("DisplayGraphBtn").addEventListener("click", () => {
     // Open the chart in a new browser tab
-    window.open("https://metargui-production.up.railway.app//accuracy_chart?metric=Overall", "_blank");
+    window.open("/api/accuracy_chart?metric=Overall", "_blank");
 });
 
 });
@@ -832,27 +789,27 @@ upperAirObsFilePreview.querySelector('.close-btn').addEventListener('click', fun
 });
 
 // Forecast file upload
-upperAirForecastFileInput.addEventListener('change', function () {
-    const file = this.files[0];
-    if (!file) return;
-    if (!file.name.endsWith('.pdf')) {
-        showCustomAlert('Please upload a PDF file for upper air forecast.');
-        return;
-    }
-    upperAirForecastFilePreview.querySelector('.file-name-container span').textContent = file.name;
-    upperAirForecastFilePreview.classList.remove('hidden');
-    const previewContent = upperAirForecastFilePreview.querySelector('.preview-content');
-    const loadingIndicator = upperAirForecastFilePreview.querySelector('.loading-indicator');
-    loadingIndicator.classList.remove('hidden');
-    previewContent.textContent = '';
-    if (file.type === 'application/pdf') {
-        loadingIndicator.classList.add('hidden');
-        previewContent.innerHTML = '<p class="text-gray-600">PDF uploaded successfully. Upper winds data will be extracted for verification.</p>';
-    } else {
-        loadingIndicator.classList.add('hidden');
-        previewContent.textContent = 'Please upload a PDF file.';
-    }
-});
+// upperAirForecastFileInput.addEventListener('change', function () {
+//     const file = this.files[0];
+//     if (!file) return;
+//     if (!file.name.endsWith('.pdf')) {
+//         showCustomAlert('Please upload a PDF file for upper air forecast.');
+//         return;
+//     }
+//     upperAirForecastFilePreview.querySelector('.file-name-container span').textContent = file.name;
+//     upperAirForecastFilePreview.classList.remove('hidden');
+//     const previewContent = upperAirForecastFilePreview.querySelector('.preview-content');
+//     const loadingIndicator = upperAirForecastFilePreview.querySelector('.loading-indicator');
+//     loadingIndicator.classList.remove('hidden');
+//     previewContent.textContent = '';
+//     if (file.type === 'application/pdf') {
+//         loadingIndicator.classList.add('hidden');
+//         previewContent.innerHTML = '<p class="text-gray-600">PDF uploaded successfully. Upper winds data will be extracted for verification.</p>';
+//     } else {
+//         loadingIndicator.classList.add('hidden');
+//         previewContent.textContent = 'Please upload a PDF file.';
+//     }
+// });
 
  document.getElementById('upperAirForecastFileInput').addEventListener('change', async function (e) {
         const file = e.target.files[0];
@@ -923,7 +880,7 @@ upperAirForecastFilePreview.querySelector('.close-btn').addEventListener('click'
 //     upperAirLoadingIndicator.classList.remove('hidden');
 //     upperAirPreviewContent.textContent = '';
 //     const dateTime = `${date} ${hour}:00:00`;
-//     fetch(`https://metargui-production.up.railway.app//get_upper_air?datetime=${encodeURIComponent(dateTime)}&station_id=${station}`)
+//     fetch(`/api/get_upper_air?datetime=${encodeURIComponent(dateTime)}&station_id=${station}`)
 //         .then(async response => {
 //             upperAirLoadingIndicator.classList.add('hidden');
 //             if (!response.ok) {
@@ -991,7 +948,7 @@ upperAirVerifyBtn.addEventListener('click', function () {
     // Show loading, hide report
     upperAirReportSection.style.display = 'none';
 
-    fetch('https://metargui-production.up.railway.app//process_upper_air', {
+    fetch('/api/process_upper_air', {
         method: 'POST',
         body: formData
     })
@@ -1020,7 +977,7 @@ upperAirVerifyBtn.addEventListener('click', function () {
 
             // Fetch and populate the verification table
 //             if (data.file_path) {
-//                 fetch(`https://metargui-production.up.railway.app//download/upper_air_csv?file_path=${encodeURIComponent(data.file_path)}`)
+//                 fetch(`/api/download/upper_air_csv?file_path=${encodeURIComponent(data.file_path)}`)
 //                     .then(response => {
 //                         if (!response.ok) throw new Error('Failed to download verification CSV');
 //                         return response.text();
@@ -1035,7 +992,7 @@ upperAirVerifyBtn.addEventListener('click', function () {
 //                 // Set download button
 //                 const downloadBtn = document.querySelector('#upperAirReportSection #downloadCsvBtn');
 // if (downloadBtn && data.file_path.endsWith('.xlsx')) {
-//     downloadBtn.href = `https://metargui-production.up.railway.app//download/upper_air_csv?file_path=${encodeURIComponent(data.file_path)}`;
+//     downloadBtn.href = `/api/download/upper_air_csv?file_path=${encodeURIComponent(data.file_path)}`;
 //     downloadBtn.textContent = "Download XLSX Report";
 // }
 
@@ -1087,7 +1044,7 @@ upperAirVerifyBtn.addEventListener('click', function () {
     // Set download button
     const downloadBtn = document.querySelector('#upperAirVerificationModal #downloadCsvBtn');
     if (downloadBtn && data.file_path && data.file_path.endsWith('.xlsx')) {
-        downloadBtn.href = `https://metargui-production.up.railway.app//download/upper_air_csv?file_path=${encodeURIComponent(data.file_path)}`;
+        downloadBtn.href = `/api/download/upper_air_csv?file_path=${encodeURIComponent(data.file_path)}`;
         // downloadBtn.textContent = "Download XLSX Report";
         downloadBtn.style.display = 'inline-block';
     }
@@ -1177,9 +1134,9 @@ function setupDragAndDrop(uploadAreaId, fileInputId, fileType) {
     });
 
     // Optional: clicking the area opens the file dialog
-    uploadArea.addEventListener('click', function () {
-        fileInput.click();
-    });
+    // uploadArea.addEventListener('click', function () {
+    //     fileInput.click();
+    // });
 }
 
 
@@ -1351,7 +1308,7 @@ document.querySelectorAll('.adwrn-forecast-file-input').forEach(input => {
         // Prepare FormData and send to backend
         const formData = new FormData();
         formData.append('file', file);
-        fetch('https://metargui-production.up.railway.app//upload_ad_warning', {
+        fetch('/api/upload_ad_warning', {
             method: 'POST',
             body: formData
         })
@@ -1439,7 +1396,7 @@ function downloadExcel() {
     }
     
     // Fetch the CSV data and trigger download
-    fetch('https://metargui-production.up.railway.app//download/adwrn_report')
+    fetch('/api/download/adwrn_report')
         .then(response => {
             console.log('Download response status:', response.status);
             if (!response.ok) {
@@ -1477,7 +1434,7 @@ if (adwrnVerifyBtn && adwrnReportLoadingSection) {
         if (modal) modal.style.display = 'none';
         
         adwrnReportLoadingSection.style.display = 'flex';
-        fetch('https://metargui-production.up.railway.app//adwrn_verify', { method: 'POST' })
+        fetch('/api/adwrn_verify', { method: 'POST' })
             .then(response => {
                 console.log('Response status:', response.status); // Debug log
                 return response.json();
@@ -1657,7 +1614,7 @@ function downloadAerodromeWarningsTable() {
     }
     
     // Fetch the table data and trigger download
-    fetch('https://metargui-production.up.railway.app//download/adwrn_table')
+    fetch('/api/download/adwrn_table')
         .then(response => {
             console.log('Table download response status:', response.status);
             if (!response.ok) {
